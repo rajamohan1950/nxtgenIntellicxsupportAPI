@@ -44,6 +44,15 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
+        .suggestion-btn {
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 5px;
+        }
+        .suggestion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -87,8 +96,16 @@
                 </button>
             </form>
             
-            <!-- Debug Info (hidden by default) -->
-            <div id="debugInfo" class="mt-4 p-4 bg-gray-100 rounded-lg hidden">
+            <!-- Suggestion Buttons -->
+            <div id="suggestionButtons" class="mt-4 flex flex-wrap gap-2">
+                <button class="suggestion-btn bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">Hello</button>
+                <button class="suggestion-btn bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">I need help</button>
+                <button class="suggestion-btn bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">Tell me about your products</button>
+                <button class="suggestion-btn bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">Goodbye</button>
+            </div>
+            
+            <!-- Debug Info -->
+            <div id="debugInfo" class="mt-4 p-4 bg-gray-100 rounded-lg">
                 <h3 class="font-semibold mb-2">Debug Information:</h3>
                 <pre id="debugText" class="text-sm"></pre>
             </div>
@@ -114,8 +131,16 @@
                     option.textContent = new Intl.DisplayNames(['en'], {type: 'language'}).of(lang);
                     languageSelect.appendChild(option);
                 });
+
+                // Show initial suggestions
+                showDynamicSuggestions('greeting');
+                
+                // Add welcome message
+                addMessage("Welcome to our multilingual customer support! How can I help you today?", 'assistant');
             } catch (error) {
                 console.error('Error initializing app:', error);
+                // Show error message
+                addMessage("Sorry, there was an error connecting to the service. Please try again later.", 'assistant');
             }
         }
         
@@ -152,15 +177,23 @@
                 // Hide typing indicator
                 document.getElementById('typingIndicator').classList.add('hidden');
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} - ${result.detail || 'Unknown error'}`);
+                }
+                
                 // Add assistant message to chat
                 addMessage(result.response, 'assistant');
                 
                 // Update debug info
                 updateDebugInfo(result);
+
+                // Show dynamic suggestions based on intent
+                showDynamicSuggestions(result.intent);
             } catch (error) {
                 console.error('Error processing query:', error);
                 document.getElementById('typingIndicator').classList.add('hidden');
-                addMessage('Sorry, an error occurred. Please try again.', 'assistant');
+                addMessage(`Error: ${error.message}`, 'assistant');
+                updateDebugInfo({ error: error.message });
             }
         });
         
@@ -180,6 +213,80 @@
         function updateDebugInfo(result) {
             const debugText = document.getElementById('debugText');
             debugText.textContent = JSON.stringify(result, null, 2);
+        }
+        
+        // Show dynamic suggestions based on intent
+        function showDynamicSuggestions(intent) {
+            const dynamicSuggestions = {
+                'greeting': [
+                    'How are you?',
+                    'I need help with something',
+                    'What services do you offer?',
+                    'Tell me about your pricing'
+                ],
+                'farewell': [
+                    'Wait, I have another question',
+                    'Thank you for your help',
+                    'How can I contact support?',
+                    'Start a new conversation'
+                ],
+                'help': [
+                    'I need technical support',
+                    'How do I contact customer service?',
+                    'What are your prices?',
+                    'Can you explain how this works?'
+                ],
+                'product_info': [
+                    'What are your prices?',
+                    'Do you offer free trials?',
+                    'How does your product compare to others?',
+                    'How can I contact sales?'
+                ],
+                'pricing': [
+                    'Tell me about the basic plan',
+                    'What features come with premium?',
+                    'Do you offer discounts?',
+                    'Is there a free trial?'
+                ],
+                'contact': [
+                    'What are your support hours?',
+                    'Do you have live chat?',
+                    'I need technical help',
+                    'Can I speak to a manager?'
+                ],
+                'technical_support': [
+                    'My app is crashing',
+                    'I'm getting an error message',
+                    'How do I reset my password?',
+                    'The system is very slow'
+                ],
+                'unknown': [
+                    'Let me try again',
+                    'I need help with something else',
+                    'Can you tell me about your company?',
+                    'What services do you offer?'
+                ]
+            };
+            
+            // Get suggestions for the current intent
+            const suggestions = dynamicSuggestions[intent] || dynamicSuggestions['unknown'];
+            
+            // Clear existing dynamic suggestions
+            const suggestionButtons = document.getElementById('suggestionButtons');
+            suggestionButtons.innerHTML = '';
+            
+            // Add all suggestions
+            suggestions.forEach(suggestion => {
+                const button = document.createElement('button');
+                button.className = 'suggestion-btn bg-gray-200 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm';
+                button.textContent = suggestion;
+                button.addEventListener('click', function() {
+                    const queryInput = document.getElementById('queryInput');
+                    queryInput.value = this.textContent;
+                    document.getElementById('queryForm').dispatchEvent(new Event('submit'));
+                });
+                suggestionButtons.appendChild(button);
+            });
         }
         
         // Initialize the app

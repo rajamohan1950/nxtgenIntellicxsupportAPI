@@ -1,129 +1,54 @@
-<<<<<<< HEAD
-# nxtgenIntellicxsupportAPI
-=======
-# Multilingual Customer Support System
+# Nxt Intelligent Voice Assistant
 
-A powerful automated customer support system that can handle queries in 80+ languages using state-of-the-art machine learning models.
+A multilingual customer support chatbot that can understand and respond to user queries in multiple languages.
 
 ## Features
 
-- Language detection and translation for 80+ languages
-- Intent classification for customer queries
-- Contextual response generation
-- Automatic translation of responses back to the user's language
-- RESTful API interface
-- Scalable architecture
+- Multilingual support (English, Spanish, French, German, Italian, Portuguese)
+- Intent classification to understand user queries
+- Dynamic response generation based on detected intent
+- Interactive chat interface with suggestion buttons
+- Language selection for preferred language
 
-## Prerequisites
+## Components
 
-- Python 3.8+
-- CUDA-compatible GPU (optional, for faster processing)
-- Redis
-- PostgreSQL
+- **Backend**: FastAPI server that handles query processing and response generation
+- **Frontend**: Simple HTML/CSS/JS chat interface
+- **ML Components**: Intent classification, language detection, and response generation
 
-## Installation
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11 or higher
+- pip package manager
+
+### Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd multilingual-customer-support
+git clone https://github.com/yourusername/Nxt-Intelligent-Voice-Assistant.git
+cd Nxt-Intelligent-Voice-Assistant
 ```
 
-2. Create a virtual environment:
+2. Run the application:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 run.py
 ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Copy the example environment file and update it with your settings:
-```bash
-cp config/.env.example config/.env
-```
-
-5. Update the `.env` file with your:
-   - OpenAI API key
-   - Database credentials
-   - Redis configuration
-   - Other settings as needed
+The application will:
+- Create a virtual environment
+- Install required dependencies
+- Start the backend server
+- Start the frontend server
+- Open the application in your default web browser
 
 ## Usage
 
-1. Start the API server:
-```bash
-python src/backend/main.py
-```
-
-2. The API will be available at `http://localhost:8000`
-
-3. API Documentation will be available at `http://localhost:8000/docs`
-
-## API Endpoints
-
-### POST /process_query
-
-Process a customer query in any supported language.
-
-Request body:
-```json
-{
-    "text": "Comment puis-je réinitialiser mon mot de passe?",
-    "session_id": "optional-session-id",
-    "context": [
-        {
-            "user": "Previous user message",
-            "assistant": "Previous assistant response"
-        }
-    ]
-}
-```
-
-Response:
-```json
-{
-    "original_text": "Comment puis-je réinitialiser mon mot de passe?",
-    "detected_language": "fr_XX",
-    "translated_text": "How can I reset my password?",
-    "intent": "technical_support",
-    "intent_confidence": 0.95,
-    "response": "I can help you reset your password. Please follow these steps...",
-    "translated_response": "Je peux vous aider à réinitialiser votre mot de passe. Veuillez suivre ces étapes..."
-}
-```
-
-### GET /health
-
-Check the health status of the API.
-
-## Architecture
-
-The system consists of several components:
-
-1. **Language Processor**: Handles language detection and translation
-2. **Intent Classifier**: Determines the user's intent from their query
-3. **Response Generator**: Generates contextual responses using GPT-4
-4. **FastAPI Backend**: Coordinates all components and provides the API interface
-
-## Model Information
-
-- Language Detection: XLM-RoBERTa Base
-- Translation: mBART-50 Many-to-Many
-- Intent Classification: BART Large MNLI
-- Response Generation: GPT-4
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+1. Type a message in the input field or click on one of the suggestion buttons
+2. The assistant will detect the intent and respond accordingly
+3. You can select your preferred language from the dropdown menu
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
->>>>>>> c2b11cb (Initial commit)

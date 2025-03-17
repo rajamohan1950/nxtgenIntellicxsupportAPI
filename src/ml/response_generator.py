@@ -3,6 +3,9 @@ import torch
 from typing import Dict, Optional
 import json
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ResponseGenerator:
     def __init__(self):
@@ -70,9 +73,19 @@ class ResponseGenerator:
             with open(responses_file, 'w', encoding='utf-8') as f:
                 json.dump(default_responses, f, indent=4, ensure_ascii=False)
             return default_responses
-            
-        with open(responses_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        
+        try:    
+            with open(responses_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading responses file: {str(e)}")
+            # Return default responses on error
+            return {
+                "greeting": {"en": "Hello! How can I assist you today?"},
+                "farewell": {"en": "Goodbye! Have a great day!"},
+                "help": {"en": "I'm here to help! Please let me know what you need assistance with."},
+                "unknown": {"en": "I'm not sure I understand. Could you please rephrase that?"}
+            }
     
     def _get_translation_model(self, source_lang: str, target_lang: str) -> tuple:
         """
@@ -92,14 +105,20 @@ class ResponseGenerator:
         if model_key not in self.translation_models:
             model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
             try:
-                tokenizer = MarianTokenizer.from_pretrained(model_name)
-                model = MarianMTModel.from_pretrained(model_name).to(self.device)
+                # Set cache directory to ensure models are saved in a consistent location
+                cache_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models")
+                os.makedirs(cache_dir, exist_ok=True)
+                
+                logger.info(f"Loading translation model {model_name}")
+                tokenizer = MarianTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+                model = MarianMTModel.from_pretrained(model_name, cache_dir=cache_dir).to(self.device)
                 self.translation_models[model_key] = (tokenizer, model)
+                logger.info(f"Translation model {model_name} loaded successfully")
             except Exception as e:
-                print(f"Warning: Could not load translation model for {model_key}: {e}")
+                logger.error(f"Could not load translation model for {model_key}: {str(e)}")
                 return None, None
                 
-        return self.translation_models[model_key]
+        return self.translation_models.get(model_key, (None, None))
     
     def translate(self, text: str, source_lang: str, target_lang: str) -> Optional[str]:
         """
@@ -118,6 +137,7 @@ class ResponseGenerator:
             
         tokenizer, model = self._get_translation_model(source_lang, target_lang)
         if not tokenizer or not model:
+            logger.warning(f"No translation model available for {source_lang} to {target_lang}")
             return None
             
         try:
@@ -130,7 +150,7 @@ class ResponseGenerator:
             translated = tokenizer.decode(outputs[0], skip_special_tokens=True)
             return translated
         except Exception as e:
-            print(f"Translation error: {e}")
+            logger.error(f"Translation error: {str(e)}")
             return None
     
     def get_response(self, intent: str, language: str = "en") -> str:
@@ -155,9 +175,17 @@ class ResponseGenerator:
         if language in response_templates:
             return response_templates[language]
             
-        # Otherwise, translate from English
-        translated = self.translate(response_templates["en"], "en", language)
-        return translated if translated else response_templates["en"]
+        # If we have English, use it
+        if "en" in response_templates:
+            # Try to translate from English
+            translated = self.translate(response_templates["en"], "en", language)
+            if translated:
+                return translated
+            return response_templates["en"]
+            
+        # If we don't have English, use the first available language
+        first_lang = next(iter(response_templates.keys()))
+        return response_templates[first_lang]
         
     def get_supported_languages(self) -> list:
         """

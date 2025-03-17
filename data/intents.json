@@ -1,0 +1,19 @@
+{
+    "greeting": [
+        "hello", "hi", "hey", "good morning", "good evening",
+        "hola", "bonjour", "ciao", "hallo", "olá"
+    ],
+    "farewell": [
+        "goodbye", "bye", "see you", "have a nice day", "take care",
+        "adiós", "au revoir", "arrivederci", "auf wiedersehen", "adeus"
+    ],
+    "help": [
+        "help", "I need assistance", "can you help me", "support needed",
+        "ayuda", "aide", "aiuto", "hilfe", "ajuda"
+    ],
+    "product_info": [
+        "product information", "tell me about your products", "what do you sell",
+        "información del producto", "informations sur le produit",
+        "informazioni sul prodotto", "Produktinformation", "informações do produto"
+    ]
+} 
