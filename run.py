@@ -105,10 +105,19 @@ def stream_output(process, prefix):
         for line in stream:
             if isinstance(line, bytes):
                 line = line.decode()
+            line_stripped = line.strip()
+            if not line_stripped:
+                continue
+            # Check if it's actually an error or just info
             if is_error:
-                logger.error(f"{prefix} ERROR: {line.strip()}")
+                # Only log as error if it contains error keywords
+                if any(keyword in line_stripped.lower() for keyword in ['error', 'exception', 'traceback', 'failed', 'failure']):
+                    logger.error(f"{prefix} ERROR: {line_stripped}")
+                else:
+                    # Most stderr output from uvicorn is just INFO messages
+                    logger.info(f"{prefix}: {line_stripped}")
             else:
-                logger.info(f"{prefix}: {line.strip()}")
+                logger.info(f"{prefix}: {line_stripped}")
     
     # Start threads for stdout and stderr
     threading.Thread(target=read_stream, args=(process.stdout, False), daemon=True).start()

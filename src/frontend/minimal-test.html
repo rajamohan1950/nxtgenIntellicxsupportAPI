@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+        button { padding: 10px 20px; font-size: 16px; }
+        input { padding: 10px; font-size: 16px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>API Test</h1>
+    <input type="text" id="testInput" value="hello" placeholder="Type message">
+    <button onclick="testAPI()">Test API Call</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const input = document.getElementById("testInput").value;
+            const result = document.getElementById("result");
+            result.innerHTML = "Sending request...";
+            
+            try {
+                console.log("Sending to: http://localhost:8000/process_query");
+                const response = await fetch("http://localhost:8000/process_query", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({text: input})
+                });
+                
+                console.log("Response status:", response.status);
+                const data = await response.json();
+                console.log("Response data:", data);
+                
+                result.innerHTML = `
+                    <h3>✅ Success!</h3>
+                    <p><strong>Response:</strong> ${data.response}</p>
+                    <p><strong>Language:</strong> ${data.detected_language}</p>
+                    <p><strong>Intent:</strong> ${data.intent}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error("Error:", error);
+                result.innerHTML = `<h3>❌ Error:</h3><p>${error.message}</p>`;
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener("load", function() {
+            console.log("Page loaded, ready to test");
+        });
+    </script>
+</body>
+</html>

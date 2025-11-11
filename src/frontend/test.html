@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <div id="test">Loading...</div>
+    <script>
+        console.log("Test script running");
+        document.getElementById("test").textContent = "JavaScript is working!";
+        
+        // Test API connection
+        fetch("http://localhost:8000/health")
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById("test").innerHTML += "<br>Backend: " + JSON.stringify(data);
+            })
+            .catch(err => {
+                document.getElementById("test").innerHTML += "<br>Error: " + err.message;
+            });
+    </script>
+</body>
+</html>

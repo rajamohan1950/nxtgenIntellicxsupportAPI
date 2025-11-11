@@ -24,7 +24,12 @@ class ResponseGenerator:
         Returns:
             Dict[str, Dict[str, str]]: Dictionary mapping intents to their response templates
         """
-        responses_file = os.path.join(os.path.dirname(__file__), "../../data/responses.json")
+        # Get absolute path to data directory
+        current_file = os.path.abspath(__file__)
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+        responses_file = os.path.join(project_root, "data", "responses.json")
+        responses_file = os.path.abspath(responses_file)
+        
         if not os.path.exists(responses_file):
             # Create default responses if file doesn't exist
             default_responses = {
@@ -106,7 +111,10 @@ class ResponseGenerator:
             model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
             try:
                 # Set cache directory to ensure models are saved in a consistent location
-                cache_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models")
+                current_file = os.path.abspath(__file__)
+                project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+                cache_dir = os.path.join(project_root, "models")
+                cache_dir = os.path.abspath(cache_dir)
                 os.makedirs(cache_dir, exist_ok=True)
                 
                 logger.info(f"Loading translation model {model_name}")

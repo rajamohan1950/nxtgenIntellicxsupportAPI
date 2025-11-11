@@ -6,6 +6,7 @@ import sys
 import os
 import logging
 import traceback
+import re
 
 # Configure logging
 logging.basicConfig(
@@ -37,6 +38,58 @@ app.add_middleware(
 
 # Mock data for responses
 SUPPORTED_LANGUAGES = ["en", "es", "fr", "de", "it", "pt"]
+
+def detect_language_from_text(text: str) -> str:
+    """
+    Simple language detection based on common words and patterns.
+    Returns language code: en, es, fr, de, it, pt
+    """
+    text_lower = text.lower()
+    
+    # Spanish indicators
+    spanish_words = ['hola', 'gracias', 'por favor', 'adiós', 'sí', 'no', 'ayuda', 'necesito', 'información']
+    spanish_patterns = ['ñ', '¿', '¡', 'qué', 'cómo', 'dónde', 'cuándo']
+    
+    # French indicators
+    french_words = ['bonjour', 'merci', 's\'il vous plaît', 'au revoir', 'oui', 'non', 'aide', 'besoin']
+    french_patterns = ['é', 'è', 'ê', 'à', 'ç', 'ù', 'ô']
+    
+    # German indicators
+    german_words = ['hallo', 'danke', 'bitte', 'auf wiedersehen', 'ja', 'nein', 'hilfe', 'brauche']
+    german_patterns = ['ä', 'ö', 'ü', 'ß']
+    
+    # Italian indicators
+    italian_words = ['ciao', 'grazie', 'per favore', 'arrivederci', 'sì', 'no', 'aiuto', 'ho bisogno']
+    italian_patterns = ['è', 'é', 'à', 'ò', 'ù']
+    
+    # Portuguese indicators
+    portuguese_words = ['olá', 'obrigado', 'por favor', 'adeus', 'sim', 'não', 'ajuda', 'preciso']
+    portuguese_patterns = ['ã', 'õ', 'ç', 'á', 'é', 'í', 'ó', 'ú']
+    
+    # Count matches
+    spanish_score = sum(1 for word in spanish_words if word in text_lower) + sum(1 for pattern in spanish_patterns if pattern in text_lower)
+    french_score = sum(1 for word in french_words if word in text_lower) + sum(1 for pattern in french_patterns if pattern in text_lower)
+    german_score = sum(1 for word in german_words if word in text_lower) + sum(1 for pattern in german_patterns if pattern in text_lower)
+    italian_score = sum(1 for word in italian_words if word in text_lower) + sum(1 for pattern in italian_patterns if pattern in text_lower)
+    portuguese_score = sum(1 for word in portuguese_words if word in text_lower) + sum(1 for pattern in portuguese_patterns if pattern in text_lower)
+    
+    # Return language with highest score, default to English
+    scores = {
+        'es': spanish_score,
+        'fr': french_score,
+        'de': german_score,
+        'it': italian_score,
+        'pt': portuguese_score
+    }
+    
+    max_score = max(scores.values())
+    if max_score > 0:
+        detected = [lang for lang, score in scores.items() if score == max_score][0]
+        logger.info(f"Detected language: {detected} (score: {max_score})")
+        return detected
+    
+    # Default to English
+    return "en"
 SUPPORTED_INTENTS = ["greeting", "farewell", "help", "product_info", "pricing", "contact", "technical_support", "unknown"]
 MOCK_RESPONSES = {
     "greeting": {
@@ -125,9 +178,8 @@ async def process_query(request: QueryRequest) -> Dict:
     try:
         logger.info(f"Processing query: {request.text}")
         
-        # Simple mock processing
-        # Detect language (use preferred or default to English)
-        detected_language = request.preferred_language if request.preferred_language else "en"
+        # Detect language from input text
+        detected_language = request.preferred_language if request.preferred_language else detect_language_from_text(request.text)
         language_confidence = 1.0
         
         # Improved intent detection based on keywords

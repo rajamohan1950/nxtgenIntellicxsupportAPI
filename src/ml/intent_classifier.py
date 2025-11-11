@@ -39,7 +39,12 @@ class IntentClassifier:
         Returns:
             Dict[str, List[str]]: Dictionary mapping intent names to lists of example utterances
         """
-        intents_file = os.path.join(os.path.dirname(__file__), "../../data/intents.json")
+        # Get absolute path to data directory
+        current_file = os.path.abspath(__file__)
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+        intents_file = os.path.join(project_root, "data", "intents.json")
+        intents_file = os.path.abspath(intents_file)
+        
         if not os.path.exists(intents_file):
             # Create default intents if file doesn't exist
             default_intents = {

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Connection</title>
+</head>
+<body>
+    <h1>Test Backend Connection</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test health
+                const health = await fetch('http://localhost:8000/health');
+                const healthData = await health.json();
+                console.log('Health:', healthData);
+                
+                // Test process_query
+                const query = await fetch('http://localhost:8000/process_query', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text: 'hello'})
+                });
+                const queryData = await query.json();
+                console.log('Query:', queryData);
+                
+                resultDiv.innerHTML = `
+                    <h2>✅ Connection Successful!</h2>
+                    <p>Health: ${JSON.stringify(healthData)}</p>
+                    <p>Query Response: ${queryData.response}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<h2>❌ Error:</h2><p>${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
